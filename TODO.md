@@ -1,0 +1,13 @@
+- [ ] Enable WSL via Powershell
+  - https://ubuntu.com/wsl
+  - https://wiki.ubuntu.com/WSL#Running_Graphical_Applications
+  - > Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
+- [ ] Install Ubuntu 20.04 via Powershell
+  - Download:
+  - > Invoke-WebRequest -Uri https://aka.ms/wslubuntu2004 -OutFile Ubuntu2004.appx -UseBasicParsing
+  - Install:
+  - > Add-AppxPackage .\Ubuntu2004.appx
+- [ ] Install X server (or Set up RDP via Bash?)
+  - https://www.howtogeek.com/261575/how-to-run-graphical-linux-desktop-applications-from-windows-10s-bash-shell/
+- [ ] Convert to Wasta 20.04 via Bash
+- [ ] Create Wasta launcher via Powershell
