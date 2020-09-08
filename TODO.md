@@ -1,3 +1,4 @@
+- [ ] Add Wasta-Linux icon file to repo.
 - [ ] Export Wasta from wsl & upload to github.
 - [ ] Verify installation process on clean system.
 
