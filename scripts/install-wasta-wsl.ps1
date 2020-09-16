@@ -57,9 +57,16 @@ $distro = "$BASE\$name"
 If (!(Test-Path $distro)) {
     # Download and install the distro. [? MB]
     #Invoke-WebRequest -Uri "https://github.com/wasta-linux/wasta-wsl/"
+    wsl --import "$name" "$BASE" "$BASE\$name.tar"
 }
 
-# TODO: Limit RAM allocated to Wasta-WSL.
+# Limit RAM allocated to all WSLs (including Wasta-WSL).
+# https://docs.microsoft.com/en-us/windows/wsl/wsl-config
+$cfg_path = "C:\Users\$env:UserName\.wslconfig"
+New-Item "$cfg_path" -ItemType "File"
+Add-Content "$cfg_path" "[wsl2]"
+Add-Content "$cfg_path" "memory=4GB"
+Add-Content "$cfg_path" "processors=2"
 
 # Install VcXsrv if not installed.
 $vcxsrv = Get-ChildItem C:\'Program Files'\VcXsrv\vcxsrv.exe* -ErrorAction 'silentlycontinue'

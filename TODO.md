@@ -1,8 +1,13 @@
-- [ ] Add Wasta-Linux icon file to repo.
-- [ ] Export Wasta from wsl & upload to github.
+- [x] Add Wasta-Linux icon file to repo.
+- [x] Export Wasta from wsl.
+- [x] Test import of Wasta into WSL.
+- [ ] Test compression to .tar.gz.
+- [ ] Test decompression from .tar.gz.
+- [ ] Upload Wasta to github?
 - [ ] Verify installation process on clean system.
 - [ ] Fix colord polkit issue.
 - [ ] Hijack ubuntu2004.exe? Create Wasta-Linux.exe?
+- [ ] Create Distro Launcher: https://github.com/Microsoft/WSL-DistroLauncher
 
 
 ### Overview
