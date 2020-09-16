@@ -4,7 +4,7 @@
 # TODO:
 #   - Figure out delivery method of Wasta-Linux files.
 #   - $BASE needs to be equivalent to script's parent directory.
-#   - Need wasta-linux.ico to be accessible.
+#   - Limit Wasta-WSL RAM to 4GB.
 
 # This specific script may also have to be given permission to run.
 # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_signing?view=powershell-7
@@ -50,6 +50,16 @@ If (!($distro)) {
     Invoke-WebRequest -Uri "https://aka.ms/wslubuntu2004" -OutFile "$BASE\wslubuntu2004.appx" -UseBasicParsing $RESUME
     Add-AppxPackage "$BASE\wslubuntu2004.appx"
 }
+
+# Install Wasta 20.04 if not installed.
+$name = "Wasta-20.04"
+$distro = "$BASE\$name"
+If (!(Test-Path $distro)) {
+    # Download and install the distro. [? MB]
+    #Invoke-WebRequest -Uri "https://github.com/wasta-linux/wasta-wsl/"
+}
+
+# TODO: Limit RAM allocated to Wasta-WSL.
 
 # Install VcXsrv if not installed.
 $vcxsrv = Get-ChildItem C:\'Program Files'\VcXsrv\vcxsrv.exe* -ErrorAction 'silentlycontinue'

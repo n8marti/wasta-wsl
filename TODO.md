@@ -1,6 +1,9 @@
 - [ ] Add Wasta-Linux icon file to repo.
 - [ ] Export Wasta from wsl & upload to github.
 - [ ] Verify installation process on clean system.
+- [ ] Fix colord polkit issue.
+- [ ] Hijack ubuntu2004.exe? Create Wasta-Linux.exe?
+
 
 ### Overview
 - VM Prep 1: Use Virt-Manager for VM testing (e.g. Wasta host / Win10 guest / WSL2)
