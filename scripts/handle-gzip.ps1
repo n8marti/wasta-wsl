@@ -4,7 +4,7 @@
 # https://social.technet.microsoft.com/Forums/windowsserver/en-US/...
 #   ...5aa53fef-5229-4313-a035-8b3a38ab93f5/unzip-gz-files-using-powershell?forum=winserverpowershell
 
-param([string]$inFile,[string]$outFile)
+param([string]$inFile) #,[string]$outFile)
 
 Function GZip-File{
     Param(
