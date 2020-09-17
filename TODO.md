@@ -3,9 +3,9 @@
 - [x] Test import of Wasta into WSL.
 - [ ] Test compression to .tar.gz.
 - [ ] Test decompression from .tar.gz.
-- [ ] Upload Wasta to github?
-- [ ] Verify installation process on clean system.
 - [ ] Fix colord polkit issue.
+- [ ] Verify installation process on clean system.
+- [ ] Upload Wasta to github?
 - [ ] Hijack ubuntu2004.exe? Create Wasta-Linux.exe?
 - [ ] Create Distro Launcher: https://github.com/Microsoft/WSL-DistroLauncher
 

@@ -36,15 +36,6 @@ apt-get install systemd-genie
 #}
 #EOF
 
-# Set genie to start on Windows user login.
-distro="Ubuntu-20.04"
-expr='s/.*\/mnt\/c\/Users\/(.*)\/AppData.*/\1/'
-win_user=$(echo $PATH | sed -r "${expr}")
-win_startup=/mnt/c/Users/"${win_user}"/AppData/Roaming/Microsoft/Windows/Start\ Menu/Programs/StartUp
-cat <<EOF > "${win_startup}"/start-wsl-systemd-genie.bat
-wsl --distribution $distro genie -i
-EOF
-
 # Start genie.
 #genie -s
 

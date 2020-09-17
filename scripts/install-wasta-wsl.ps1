@@ -28,6 +28,14 @@ If ($PSVersionMaj -eq 6) {
 $BASE = $PSScriptRoot
 New-Item -Path "C:\Program Files\" -Name "Wasta-Linux" -Type "directory"
 
+# Limit RAM allocated to all WSLs (including Wasta-WSL).
+# https://docs.microsoft.com/en-us/windows/wsl/wsl-config
+$cfg_path = "C:\Users\$env:UserName\.wslconfig"
+New-Item "$cfg_path" -ItemType "File"
+Add-Content "$cfg_path" "[wsl2]"
+Add-Content "$cfg_path" "memory=4GB"
+Add-Content "$cfg_path" "processors=2"
+
 # Enable VirtualMachinePlatform if not enabled.
 $vmp_state = Get-WindowsOptionalFeature -Online -FeatureName 'VirtualMachinePlatform' | Select-Object -ExpandProperty 'State'
 If ($vmp_state -ne 'Enabled') {
@@ -44,29 +52,29 @@ If ($wsl_state -ne 'Enabled') {
 }
 
 # Install Ubuntu 20.04 if not installed.
-$distro = Get-AppxPackage -Name 'CanonicalGroupLimited.Ubuntu20.04onWindows'
-If (!($distro)) {
+$DISTRO = Get-AppxPackage -Name 'CanonicalGroupLimited.Ubuntu20.04onWindows'
+If (!($DISTRO)) {
     # Download and install the distro. [~450 MB]
     Invoke-WebRequest -Uri "https://aka.ms/wslubuntu2004" -OutFile "$BASE\wslubuntu2004.appx" -UseBasicParsing $RESUME
     Add-AppxPackage "$BASE\wslubuntu2004.appx"
 }
 
 # Install Wasta 20.04 if not installed.
-$name = "Wasta-20.04"
-$distro = "$BASE\$name"
-If (!(Test-Path $distro)) {
+$DISTRO = "Wasta-20.04"
+$dist_path = "$BASE\$DISTRO"
+If (!(Test-Path $dist_path)) {
     # Download and install the distro. [? MB]
     #Invoke-WebRequest -Uri "https://github.com/wasta-linux/wasta-wsl/"
-    wsl --import "$name" "$BASE" "$BASE\$name.tar"
+    wsl --import "$DISTRO" "$BASE" "$BASE\$DISTRO.tar"
+    # Default user is "root" when imported.
+    # We will need to specify "wasta" on wsl launch command line.
 }
 
-# Limit RAM allocated to all WSLs (including Wasta-WSL).
-# https://docs.microsoft.com/en-us/windows/wsl/wsl-config
-$cfg_path = "C:\Users\$env:UserName\.wslconfig"
-New-Item "$cfg_path" -ItemType "File"
-Add-Content "$cfg_path" "[wsl2]"
-Add-Content "$cfg_path" "memory=4GB"
-Add-Content "$cfg_path" "processors=2"
+# Set genie (and Wasta-20.04) to start on Windows user login.
+$bat = start-wsl-systemd-genie.bat
+$start_path = "C:\Users\$env:UserName\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\$bat"
+New-Item "$start_path" -ItemType "File"
+Add-Content "$start_path" "wsl --distribution $DISTRO genie -i"
 
 # Install VcXsrv if not installed.
 $vcxsrv = Get-ChildItem C:\'Program Files'\VcXsrv\vcxsrv.exe* -ErrorAction 'silentlycontinue'
@@ -80,18 +88,20 @@ If (!($vcxsrv)) {
 }
 
 # Create Wasta-Linux launcher on Desktop and in Wasta-Linux folder once all parts are installed.
-If ( ($vmp_state) -and ($wsl_state) -and ($distro) -and ($vcxsrv) ) {
+If ( ($vmp_state) -and ($wsl_state) -and ($DISTRO) -and ($vcxsrv) ) {
     $desktop_launcher = Join-Path ([Environment]::GetFolderPath("Desktop")) "Wasta-Linux.lnk"
     $wasta_launcher = "$BASE\Wasta-Linux.lnk"
     If (!(Get-Item $wasta_launcher -ErrorAction 'silentlycontinue')) {
         $target = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
-        $arg = "-command & {& C:\'Program Files'\VcXsrv\vcxsrv.exe -ac -wgl -dpms -wr -query $env:computername-wsl}"
+        #$arg = "-command & {& C:\'Program Files'\VcXsrv\vcxsrv.exe -ac -wgl -dpms -wr -query $env:computername-wsl}"
+        $arg = "-ExecutionPolicy Bypass -File $BASE\launch-wasta-wsl.ps1'"
         $icon = "$BASE\wasta-linux.ico"
         $desktop_shortcut = (New-Object -comObject WScript.Shell).CreateShortcut($desktop_launcher)
         $wasta_shortcut = (New-Object -comObject WScript.Shell).CreateShortcut($wasta_launcher)
         $desktop_shortcut.TargetPath = $wasta_shortcut.TargetPath = "$target"
         $desktop_shortcut.Arguments = $wasta_shortcut.Arguments = "$arg"
         $desktop_shortcut.IconLocation = $wasta_shortcut.IconLocation = "$icon"
+        $desktop_shortcut.WindowStyle = 7 # run minimized
         $desktop_shortcut.Save()
         $wasta_shortcut.Save()
     }
