@@ -24,12 +24,14 @@ If ($PSVersionMaj -eq 6) {
     }
 } ElseIf ($PSVersionMaj -gt 6) { $RESUME = '-Resume' }
 
-$PARENT = $PSScriptRoot
+$PARENT = "$PSScriptRoot"
 $C_PROG_FILES = $env:ProgramFiles
 $BASE = "$C_PROG_FILES\Wasta-Linux"
 
 # Create Wasta-Linux install folder.
 New-Item -Path "C:\Program Files\" -Name "Wasta-Linux" -Type "directory"
+# Copy all files to Wasta-Linux folder.
+Copy-Item -Path "$PARENT"\* -Destination "$BASE"
 
 # Limit RAM allocated to all WSLs (including Wasta-WSL).
 # https://docs.microsoft.com/en-us/windows/wsl/wsl-config
