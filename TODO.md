@@ -5,9 +5,8 @@
 - [ ] Test decompression from .tar.gz.
 - [ ] Fix colord polkit issue.
 - [ ] Verify installation process on clean system.
-- [ ] Upload Wasta to github?
-- [ ] Hijack ubuntu2004.exe? Create Wasta-Linux.exe?
-- [ ] Create Distro Launcher: https://github.com/Microsoft/WSL-DistroLauncher
+- [ ] Upload Wasta-20.04.tar(.gz) to github?
+- [ ] Create Distro Launcher?: https://github.com/Microsoft/WSL-DistroLauncher
 
 
 ### Overview
