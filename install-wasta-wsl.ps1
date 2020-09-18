@@ -1,14 +1,15 @@
-
-# User needs to first allow script execution in this PS window before this script will run.
-#Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+# ------------------------------------------------------------------------------
+# 1. User needs to first allow script execution in this PS window before this script will run.
+# > Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 #
-# This specific script may also have to be given permission to run.
-# https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_signing?view=powershell-7
+# 2. This specific script may also have to be given permission to run.
+# https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_signing
 # Go to script in File Manager, right-click, select "Properties", select "Unblock".
 # OR
 # > Unblock-File -Path .\install-ubuntu-in-wsl.ps1
-
-# Script needs to be run with elevated privileges.
+#
+# 3. Script needs to be run with elevated privileges.
+# ------------------------------------------------------------------------------
 
 # Can downloads be resumable (PS >or= 6.1.0)?
 $RESUME = ''
@@ -23,9 +24,9 @@ If ($PSVersionMaj -eq 6) {
 $PARENT = "$PSScriptRoot"
 $C_PROG_FILES = $env:ProgramFiles
 #$BASE_PAR = "$C_PROG_FILES"
-$BASE_PAR = "$APPDATA"
+$BASE_PAR = "$env:APPDATA"
 #$BASE = "$C_PROG_FILES\Wasta-Linux"
-$BASE = "$APPDATA\Wasta-Linux"
+$BASE = "$BASE_PAR\Wasta-Linux"
 
 # Create Wasta-Linux install folder.
 Write-Host "Creating install folder at $BASE and copying files."
@@ -34,17 +35,6 @@ If ((Test-Path $BASE) -eq $false) {
 }
 # Copy all files to Wasta-Linux folder, updating old ones if necessary.
 Copy-Item -Path "$PARENT\*" -Destination "$BASE" -Recurse -Force
-
-# Limit RAM allocated to all WSLs (including Wasta-WSL).
-# https://docs.microsoft.com/en-us/windows/wsl/wsl-config
-$cfg_path = "$HOME\.wslconfig"
-if ((Test-Path $cfg_path) -eq $false) {
-    Write-Host "Limiting Wasta-WSL to 4GB RAM and 2 CPUs."
-    New-Item "$cfg_path" -ItemType "File"
-    Add-Content "$cfg_path" "[wsl2]"
-    Add-Content "$cfg_path" "memory=4GB"
-    Add-Content "$cfg_path" "processors=2"
-}
 
 # Enable VirtualMachinePlatform if not enabled.
 $vmp_state = Get-WindowsOptionalFeature -Online -FeatureName 'VirtualMachinePlatform' | Select-Object -ExpandProperty 'State'
@@ -70,15 +60,24 @@ If ($wsl_state -eq 'Enabled') {
     } Else {
     Write-Host "Enabling Microsoft-Windows-Subsystem-Linux."
     Enable-WindowsOptionalFeature -Online -FeatureName 'Microsoft-Windows-Subsystem-Linux' -NoRestart
-    If ($? -eq 0) {
-        $wsl_state = $true
-    } Else {
-        $wsl_state = $false
+    $wsl_state = $?
+    If ($wsl_state = $false) {
         Write-Host "Unable to enable Microsoft-Windows-Subsystem-Linux. Exiting."
         Exit 1
     }
     # kernel update package [14MB]:
     # https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi
+}
+
+# Limit RAM allocated to all WSLs (including Wasta-WSL).
+# https://docs.microsoft.com/en-us/windows/wsl/wsl-config
+$cfg_path = "$HOME\.wslconfig"
+if ((Test-Path $cfg_path) -eq $false) {
+    Write-Host "Limiting Wasta-WSL to 4GB RAM and 2 CPUs."
+    New-Item "$cfg_path" -ItemType "File"
+    Add-Content "$cfg_path" "[wsl2]"
+    Add-Content "$cfg_path" "memory=4GB"
+    Add-Content "$cfg_path" "processors=2"
 }
 
 # Install Ubuntu 20.04 if not installed.
@@ -90,25 +89,24 @@ If ($wsl_state -eq 'Enabled') {
 #}
 
 # Install Wasta 20.04 if not installed.
-$DISK = "ext4"
+$DISK = "ext4.vhdx"
 $DISTRO = "Wasta-20.04"
 $disk_path = Test-Path "$BASE\$DISK"
-If ($disk_path -eq $false)) {
+If ($disk_path -eq $false) {
     # Download and install the distro. [? MB]
-    Write-Host "You need to download the Wasta-20.04 tar file from here:"
+    Write-Host "You need to download the Wasta-20.04 tar file from here [Size?]:"
     Write-Host "https://link.to.Wasta-20.04.tar"
+    Exit 1
     #Invoke-WebRequest -Uri "https://github.com/wasta-linux/wasta-wsl/"
     Write-Host "wsl --import "$DISTRO" "$BASE" "$BASE\$DISTRO.tar""
-    If ($? -eq 0) {
-        $disk_path = $true
-    } Else {
-        $disk_path = $false
+    $disk_path = $?
+    If ($disk_path -eq $false) {
         Write-Host "Unable to install $DISTRO. Exiting."
         Exit 1
     }
     # Default user is "root" when imported.
     # We will need to specify "wasta" on wsl launch command line if launched manually:
-    #   > wsl --distribution 'Wasta-20.04' --user 'wasta'
+    # > wsl --distribution 'Wasta-20.04' --user 'wasta'
 }
 
 # Install VcXsrv if not installed.
@@ -119,10 +117,8 @@ If ($vcxsrv -eq $false) {
     # Run installer, accepting default location.
     #   Suggested: no Start Menu entry, no Desktop icon.
     & "$BASE\vcxsrv.installer.exe"
-    If ($? -eq 0) {
-        $vcxsrv = $true
-    } Else {
-        $vcxsrv = $false
+    $vcxsrv = $?
+    If ($vcxsrv = $false) {
         Write-Host "Unable to install VcXsrv. Exiting."
         Exit 1
     }

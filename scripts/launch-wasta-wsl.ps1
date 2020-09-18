@@ -4,8 +4,7 @@
 # - Launch X Window for Wasta WSL.
 
 # Check if Wasta WSL is already running.
-Test-Connection -TartgetName "$env:computername-wsl" -ErrorAction 'SilentlyContinue'
-$check = $?
+$check = Test-Connection -ComputerName $env:computername-wsl -Quiet
 If ($check -eq $false) {
     Write-Host "Booting up Wasta-20.04 now. Please be patient..."
 }
@@ -17,7 +16,7 @@ While ($check -eq $false) {
 
 # Have to wait awhile, otherwise vcxsrv will fail to start.
 $wait = 10
-Write-Host "$wait more seconds..."
+Write-Host "$wait seconds..."
 Start-Sleep -Seconds $wait
 
 # Launch X Window for Wasta WSL.
