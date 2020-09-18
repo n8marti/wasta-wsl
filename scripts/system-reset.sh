@@ -9,12 +9,17 @@
 # Remove unnecessary files.
 # ------------------------------------------------------------------------------
 # Remove orphaned packages.
+echo "Removing orphaned packages..."
 apt-get -y autoremove
+echo
 
 # Clear out log files.
+echo "Clearing out log files..."
 journalctl --rotate --vacuum-time=1s
+echo
 
 # Cleaning up other unneeded files.
+echo "Removing various other unneeded files..."
 rm -rf /etc/apt/sources.list.d/*.save
 rm -rf /var/lib/apt/lists/lock
 rm -rf /var/cache/apt/archives/*
@@ -50,10 +55,12 @@ rm -rf /var/lib/kdm/*
 rm -rf /var/run/console/*
 #rm -f /etc/gdm/gdm.conf-custom
 find /var/mail/ -type f -exec rm -f {} \;
+echo
 
 # ------------------------------------------------------------------------------
 # Ensure "Wasta" user
 # ------------------------------------------------------------------------------
+echo "Ensuring wasta user..."
 adduser --gecos 'Wasta,,,' --disabled-login --uid 1999 wasta
 usermod -a -G adm,audio,cdrom,dialout,dip,floppy,netdev,plugdev,sudo,video wasta
 
@@ -61,10 +68,12 @@ usermod -a -G adm,audio,cdrom,dialout,dip,floppy,netdev,plugdev,sudo,video wasta
 passwd --delete wasta
 # Force password to expire immediately.
 passwd --expire wasta
+echo
 
 # ------------------------------------------------------------------------------
 # Remove "Test" user if present.
 # ------------------------------------------------------------------------------
+echo "Removing test user..."
 if [[ -e /home/test ]]; then
     deluser --remove-home test
     rm -rf /home/test
