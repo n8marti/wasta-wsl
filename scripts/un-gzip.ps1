@@ -10,8 +10,8 @@ Function UnGZip-File{
         $in,
         $out = ($in -replace '\.gz$','')
         )
-    $input = New-Object System.IO.FileStream $in, ([IO.FileMode]::Open), ([IO.FileAccess]::Read), ([IO.FileShare]::Read)
-    $output = New-Object System.IO.FileStream $out, ([IO.FileMode]::Create), ([IO.FileAccess]::Write), ([IO.FileShare]::None)
+    $input = New-Object System.IO.FileStream "$in", ([IO.FileMode]::Open), ([IO.FileAccess]::Read), ([IO.FileShare]::Read)
+    $output = New-Object System.IO.FileStream "$out", ([IO.FileMode]::Create), ([IO.FileAccess]::Write), ([IO.FileShare]::None)
     $gzipStream = New-Object System.IO.Compression.GzipStream $input, ([IO.Compression.CompressionMode]::Decompress)
     $buffer = New-Object byte[](1024)
     while($true){
@@ -24,7 +24,7 @@ Function UnGZip-File{
     $input.Close()
 }
 
-$outFile = $env:AppData\Wasta-Linux\Wasta-20.04.tar
+$outFile = "$env:AppData\Wasta-Linux\Wasta-20.04.tar"
 
 Write-Host "Un-GZipping $inFile..."
-UnGZip-File "$inFile" $outFile
+UnGZip-File "$inFile" "$outFile"
