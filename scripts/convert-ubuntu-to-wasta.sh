@@ -290,4 +290,11 @@ EOF
 # Restart lightdm.
 service lightdm restart
 
-# TODO: Fix pkexec perms for colord.
+# Fix polkit perms for colord.
+pkla_path="/etc/polkit-1/localauthority/50-local.d/color.pkla"
+if [[ ! -e $pkla_path ]]; then
+    color_path=$(find /mnt -name 'color.pkla' -type f 2>/dev/null | head -n1)
+    echo "color.pkla found at: $color_path"
+    echo "and copied to:       $pkla_path"
+    cp "$color_path" "$pkla_path"
+fi
