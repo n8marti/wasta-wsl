@@ -22,14 +22,17 @@ If ($PSVersionMaj -eq 6) {
 
 $PARENT = "$PSScriptRoot"
 $C_PROG_FILES = $env:ProgramFiles
-$BASE = "$C_PROG_FILES\Wasta-Linux"
+#$BASE_PAR = "$C_PROG_FILES"
+$BASE_PAR = "$APPDATA"
+#$BASE = "$C_PROG_FILES\Wasta-Linux"
+$BASE = "$APPDATA\Wasta-Linux"
 
 # Create Wasta-Linux install folder.
 Write-Host "Creating install folder at $BASE and copying files."
 If ((Test-Path $BASE) -eq $false) {
-    New-Item -Path "$C_PROG_FILES" -Name "Wasta-Linux" -Type "directory"
+    New-Item -Path "$BASE_PAR" -Name "Wasta-Linux" -Type "directory"
 }
-# Copy all files to Wasta-Linux folder, updating if necessary.
+# Copy all files to Wasta-Linux folder, updating old ones if necessary.
 Copy-Item -Path "$PARENT\*" -Destination "$BASE" -Recurse -Force
 
 # Limit RAM allocated to all WSLs (including Wasta-WSL).
@@ -46,7 +49,7 @@ if ((Test-Path $cfg_path) -eq $false) {
 # Enable VirtualMachinePlatform if not enabled.
 $vmp_state = Get-WindowsOptionalFeature -Online -FeatureName 'VirtualMachinePlatform' | Select-Object -ExpandProperty 'State'
 If ($vmp_state -eq 'Enabled') {
-    $vmp_state -eq $true
+    $vmp_state = $true
 } Else {
     # VirtualMachinePlatform supposedly enables WSL2.
     Write-Host "Enabling VirtualMachinePlatform."
