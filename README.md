@@ -10,7 +10,7 @@ Try Wasta-Linux in Windows using the Windows Subsystem for Linux
 - Start Windows PowerShell as Administrator by finding it in the Start Menu, right-clicking on it, and choosing "Run as Administrator".
 - In the PowerShell window type "cd " (3 characters: "c", "d", " "), then paste the file address you copied earlier:
 ```
-> cd C:\Users\MyUser\Downloads\wasta-linux-maser
+cd C:\Users\MyUser\Downloads\wasta-linux-maser
 ```
 - Temporarily allow script execution with this command:
 ```
