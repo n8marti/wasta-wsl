@@ -8,7 +8,7 @@ Try Wasta-Linux in Windows using the Windows Subsystem for Linux
 - Go to extracted location, right-click on "wasta-wsl-master" in the Address Bar.
 - Choose "Copy Address" from the context menu.
 - Start Windows PowerShell as Administrator by finding it in the Start Menu, right-clicking on it, and choosing "Run as Administrator".
-- In the PowerShell window type "cd " (3 characters: "c", "d", " "), then paste the file address you copied earlier:
+- In the PowerShell window type "cd " (3 characters: "c", "d", " "), then paste the file address you copied earlier and hit [Enter]:
 ```
 cd C:\Users\MyUser\Downloads\wasta-linux-maser
 ```
