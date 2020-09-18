@@ -16,7 +16,14 @@ cd C:\Users\MyUser\Downloads\wasta-linux-master
 ```
 Set-ExecutionPolicy Bypass -Scope Process
 ```
-- Type "y" then "<Enter>" to accept this change.
+```
+Execution Policy Change
+The execution policy helps protect you from scripts that you do not trust. Changing the execution policy might expose
+you to the security resks described in the about_Execution_Policies help topic at
+https://go.microsoft.com/fwlink/?LinkID=135170. Do you want to change the execution policy?
+[Y] Yes  [A] Yes to All  [N] No  [L] No to All  [S] Suspend  [?] Help (default is "N"): _
+```
+- Type "y", then "[Enter]" to accept this change.
 - Launch install-wasta-wsl.ps1 script with:
 ```
 .\install-wasta-wsl.ps1

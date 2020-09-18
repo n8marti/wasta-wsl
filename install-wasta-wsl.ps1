@@ -94,11 +94,25 @@ $DISTRO = "Wasta-20.04"
 $disk_path = Test-Path "$BASE\$DISK"
 If ($disk_path -eq $false) {
     # Download and install the distro. [? MB]
-    Write-Host "You need to download the Wasta-20.04 tar file from here [Size?]:"
+    Write-Host "The file Wasta-20.04.tar will be downloaded from here [Size?]:"
     Write-Host "https://link.to.Wasta-20.04.tar"
-    Exit 1
+    $ans = Read-Host "Continue with download? [Y/n]: "
+    If (!$ans) {
+        $ans = 'Y'
+    }
+    $ans.ToUpper()
+    If ($ans -ne 'Y') {
+        Write-Host "Download aborted. Exiting."
+        Exit 2
+    }
+    Write-Host "Downloading $DISTRO.tar.gz..."
     #Invoke-WebRequest -Uri "https://github.com/wasta-linux/wasta-wsl/"
-    Write-Host "wsl --import "$DISTRO" "$BASE" "$BASE\$DISTRO.tar""
+    # Decompress the gz file.
+    Write-Host "Decompressing $DISTRO.tar.gz..."
+    & "$BASE\scripts\un-gzip.ps1" "$BASE\$DISTRO.tar.gz"
+    # Import into WSL.
+    Write-Host "Importing $DISTRO.tar into WSL..."
+    wsl --import "$DISTRO" "$BASE" "$BASE\$DISTRO.tar"
     $disk_path = $?
     If ($disk_path -eq $false) {
         Write-Host "Unable to install $DISTRO. Exiting."
