@@ -26,5 +26,5 @@ Function UnGZip-File{
 
 $outFile = "$env:AppData\Wasta-Linux\Wasta-20.04.tar"
 
-Write-Host "Un-GZipping $inFile..."
+Write-Host "Un-GZipping $inFile. This could take a few minutes..."
 UnGZip-File "$inFile" "$outFile"

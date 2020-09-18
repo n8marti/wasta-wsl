@@ -23,18 +23,20 @@ If ($PSVersionMaj -eq 6) {
 
 $PARENT = "$PSScriptRoot"
 $C_PROG_FILES = $env:ProgramFiles
-#$BASE_PAR = "$C_PROG_FILES"
 $BASE_PAR = "$env:APPDATA"
-#$BASE = "$C_PROG_FILES\Wasta-Linux"
 $BASE = "$BASE_PAR\Wasta-Linux"
 
 # Create Wasta-Linux install folder.
 Write-Host "Creating install folder at $BASE and copying files."
 If ((Test-Path $BASE) -eq $false) {
-    New-Item -Path "$BASE_PAR" -Name "Wasta-Linux" -Type "directory"
+    Write-Host "Creating install folder at $BASE..."
+    $null = New-Item -Path "$BASE_PAR" -Name "Wasta-Linux" -Type "directory"
 }
-# Copy all files to Wasta-Linux folder, updating old ones if necessary.
-Copy-Item -Path "$PARENT\*" -Destination "$BASE" -Recurse -Force
+If ("$PARENT" -ne "$BASE") {
+    # Copy all files to Wasta-Linux folder, updating old ones if necessary.
+    Write-Host "Copying files into $BASE..."
+    Copy-Item -Path "$PARENT\*" -Destination "$BASE" -Recurse -Force
+}
 
 # Enable VirtualMachinePlatform if not enabled.
 $vmp_state = Get-WindowsOptionalFeature -Online -FeatureName 'VirtualMachinePlatform' | Select-Object -ExpandProperty 'State'
@@ -80,38 +82,32 @@ if ((Test-Path $cfg_path) -eq $false) {
     Add-Content "$cfg_path" "processors=2"
 }
 
-# Install Ubuntu 20.04 if not installed.
-#$DISTRO = Get-AppxPackage -Name 'CanonicalGroupLimited.Ubuntu20.04onWindows'
-#If (!($DISTRO)) {
-#    # Download and install the distro. [~450 MB]
-#    Invoke-WebRequest -Uri "https://aka.ms/wslubuntu2004" -OutFile "$BASE\wslubuntu2004.appx" -UseBasicParsing $RESUME
-#    Add-AppxPackage "$BASE\wslubuntu2004.appx"
-#}
-
 # Install Wasta 20.04 if not installed.
 $DISK = "ext4.vhdx"
 $DISTRO = "Wasta-20.04"
 $disk_path = Test-Path "$BASE\$DISK"
 If ($disk_path -eq $false) {
     # Download and install the distro. [? MB]
-    Write-Host "The file Wasta-20.04.tar will be downloaded from here [Size?]:"
-    Write-Host "https://link.to.Wasta-20.04.tar"
-    $ans = Read-Host "Continue with download? [Y/n]: "
+
+    Write-Host "The file Wasta-20.04.tar will be downloaded from the following link [about 2GB]:"
+    Write-Host "https://link.to.Wasta-20.04.tar.gz"
+    $ans = Read-Host "Continue with download? [Y/n]"
     If (!$ans) {
         $ans = 'Y'
     }
-    $ans.ToUpper()
+    $ans = $ans.ToUpper()
     If ($ans -ne 'Y') {
         Write-Host "Download aborted. Exiting."
         Exit 2
     }
     Write-Host "Downloading $DISTRO.tar.gz..."
     #Invoke-WebRequest -Uri "https://github.com/wasta-linux/wasta-wsl/"
+
     # Decompress the gz file.
-    Write-Host "Decompressing $DISTRO.tar.gz..."
     & "$BASE\scripts\un-gzip.ps1" "$BASE\$DISTRO.tar.gz"
+
     # Import into WSL.
-    Write-Host "Importing $DISTRO.tar into WSL..."
+    Write-Host "Importing $DISTRO.tar into WSL. This could take several minutes..."
     wsl --import "$DISTRO" "$BASE" "$BASE\$DISTRO.tar"
     $disk_path = $?
     If ($disk_path -eq $false) {
@@ -143,9 +139,9 @@ If ( ($vmp_state -eq $true) -and ($wsl_state -eq $true) -and ($disk_path -eq $tr
     $desktop_launcher = Join-Path ([Environment]::GetFolderPath("Desktop")) "Wasta-Linux.lnk"
     $wasta_launcher = "$BASE\Wasta-Linux.lnk"
 
-    Write-Host "Creating Wasta-Linux launcher."
+    Write-Host "Creating Wasta-Linux launcher..."
     $target = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
-    $arg = "-ExecutionPolicy Bypass -File $BASE\scripts\launch-wasta-wsl.ps1'"
+    $arg = "-ExecutionPolicy Bypass -File `"$BASE\scripts\launch-wasta-wsl.ps1`""
     $icon = "$BASE\files\wasta-linux.ico"
     $wasta_shortcut = (New-Object -comObject WScript.Shell).CreateShortcut($wasta_launcher)
     $wasta_shortcut.TargetPath = "$target"
@@ -153,19 +149,18 @@ If ( ($vmp_state -eq $true) -and ($wsl_state -eq $true) -and ($disk_path -eq $tr
     $wasta_shortcut.IconLocation = "$icon"
     $wasta_shortcut.WindowStyle = 7 # run minimized
     $wasta_shortcut.Save()
-    If ((Test-Path "$desktop_launcher") -eq $false) {
-        Write-Host "Creating Desktop shortcut."
-        Copy-Item -Path "$wasta_launcher" -Destination "$desktop_launcher"
-    }
+
+    Write-Host "Creating Desktop shortcut..."
+    Copy-Item -Path "$wasta_launcher" -Destination "$desktop_launcher"
 }
 
 # Restart computer if needed.
 If ((New-Object -ComObject Microsoft.Update.SystemInfo).RebootRequired) {
-    $ans = "Reboot required. Reboot now? [Y/n]: "
+    $ans = "Reboot required. Reboot now? [Y/n]"
     If (!$ans) {
         $ans = 'Y'
     }
-    $ans.ToUpper()
+    $ans = $ans.ToUpper()
     If ($ans -eq 'Y') {
         Restart-Computer
     }
