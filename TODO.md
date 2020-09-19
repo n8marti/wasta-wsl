@@ -4,7 +4,7 @@
 - [x] Fix colord polkit issue.
 - [x] Test decompression from .tar.gz.
 - [ ] Verify installation process on clean system.
-- [ ] Upload Wasta-20.04.tar(.gz) to... GitHub? Drive? cloud server?
+- [ ] Upload Wasta-20.04.tar(.gz) to... Drive? GitHub? cloud server?
 - [ ] Create Distro Launcher?: https://github.com/Microsoft/WSL-DistroLauncher
 
 

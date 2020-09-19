@@ -68,6 +68,7 @@ If ($wsl_state -eq 'Enabled') {
         Exit 1
     }
     # kernel update package [14MB]:
+    # TODO: Download and install kernel update package, if needed.
     # https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi
 }
 
@@ -92,7 +93,9 @@ If ($disk_path -eq $false) {
     $drive = "https://drive.google.com"
     $id = "1ajcXQq_t1OIi1RU4XIigPqykLnjZO3QJ"
     $warn_url = "$drive/uc?export=download&id=$id"
+    # Initialize session.
     $response = Invoke-WebRequest "$warn_url" -UseBasicParsing -SessionVariable session
+    # Get unique confirm #.
     $confirm = $response.Content | Select-String 'confirm=([0-9a-zA-Z]+)&' | ForEach-Object {$_.Matches.Groups[1].Value}
     Write-Host "The file Wasta-20.04.tar will be downloaded from the following link [about 2 GB]:"
     $url = "$drive/uc?export=download&confirm=$confirm&id=$id"
