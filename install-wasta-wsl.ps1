@@ -87,10 +87,16 @@ $DISK = "ext4.vhdx"
 $DISTRO = "Wasta-20.04"
 $disk_path = Test-Path "$BASE\$DISK"
 If ($disk_path -eq $false) {
-    # Download and install the distro. [? MB]
-
-    Write-Host "The file Wasta-20.04.tar will be downloaded from the following link [about 2GB]:"
-    Write-Host "https://link.to.Wasta-20.04.tar.gz"
+    # Download and install the distro. [2 GB]
+    #   But first, deal with Drive's cookies hijinks.
+    $drive = "https://drive.google.com"
+    $id = "1ajcXQq_t1OIi1RU4XIigPqykLnjZO3QJ"
+    $warn_url = "$drive/uc?export=download&id=$id"
+    $response = Invoke-WebRequest "$warn_url" -UseBasicParsing -SessionVariable session
+    $confirm = $response.Content | Select-String 'confirm=([0-9a-zA-Z]+)&' | ForEach-Object {$_.Matches.Groups[1].Value}
+    Write-Host "The file Wasta-20.04.tar will be downloaded from the following link [about 2 GB]:"
+    $url = "$drive/uc?export=download&confirm=$confirm&id=$id"
+    Write-Host "$url"
     $ans = Read-Host "Continue with download? [Y/n]"
     If (!$ans) {
         $ans = 'Y'
@@ -100,8 +106,8 @@ If ($disk_path -eq $false) {
         Write-Host "Download aborted. Exiting."
         Exit 2
     }
-    Write-Host "Downloading $DISTRO.tar.gz..."
-    #Invoke-WebRequest -Uri "https://github.com/wasta-linux/wasta-wsl/"
+    Write-Host "Downloading $DISTRO.tar.gz... [2 GB]"
+    Invoke-WebRequest -Uri "$url" -OutFile "$BASE\$DISTRO.tar.gz" -UseBasicParsing -WebSession $session
 
     # Decompress the gz file.
     & "$BASE\scripts\un-gzip.ps1" "$BASE\$DISTRO.tar.gz"
@@ -122,8 +128,9 @@ If ($disk_path -eq $false) {
 # Install VcXsrv if not installed.
 $vcxsrv = Test-Path "$C_PROG_FILES\VcXsrv\vcxsrv.exe"
 If ($vcxsrv -eq $false) {
-    Write-Host "Downloading and installing VcXsrv X Window server. [41 MB]"
-    Invoke-WebRequest -Uri "https://sourceforge.net/projects/vcxsrv/files/latest/download" -OutFile "$BASE\vcxsrv.installer.exe" -UseBasicParsing
+    Write-Host "Downloading and installing VcXsrv X Window server... [41 MB]"
+    $url = "https://sourceforge.net/projects/vcxsrv/files/latest/download"
+    Invoke-WebRequest -Uri "$url" -OutFile "$BASE\vcxsrv.installer.exe" -UseBasicParsing
     # Run installer, accepting default location.
     #   Suggested: no Start Menu entry, no Desktop icon.
     & "$BASE\vcxsrv.installer.exe"
