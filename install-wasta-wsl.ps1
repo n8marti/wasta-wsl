@@ -84,7 +84,7 @@ if ((Test-Path $cfg_path) -eq $false) {
 }
 
 # Install Wasta 20.04 if not installed.
-$DISK = "ext4.vhdx"
+$DISK = "rootfs"
 $DISTRO = "Wasta-20.04"
 $disk_path = Test-Path "$BASE\$DISK"
 If ($disk_path -eq $false) {
@@ -137,6 +137,7 @@ $vcxsrv = Test-Path "$C_PROG_FILES\VcXsrv\vcxsrv.exe"
 If ($vcxsrv -eq $false) {
     Write-Host "Downloading and installing VcXsrv X Window server... [41 MB]"
     $url = "https://sourceforge.net/projects/vcxsrv/files/latest/download"
+    $url = "https://liquidtelecom.dl.sourceforge.net/project/vcxsrv/vcxsrv/1.20.8.1/vcxsrv-64.1.20.8.1.installer.exe"
     Invoke-WebRequest -Uri "$url" -OutFile "$BASE\vcxsrv.installer.exe" -UseBasicParsing
     # Run installer, accepting default location.
     #   Suggested: no Start Menu entry, no Desktop icon.
