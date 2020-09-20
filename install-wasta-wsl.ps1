@@ -44,9 +44,9 @@ If ($vmp_state -eq 'Enabled') {
     $vmp_state = $true
 } Else {
     # VirtualMachinePlatform supposedly enables WSL2.
-    Write-Host "Enabling VirtualMachinePlatform."
+    Write-Host "Enabling VirtualMachinePlatform..."
     Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart
-    If ($? -eq 0) {
+    If ($? -eq $true) {
         $vmp_state = $true
     } Else {
         $vmp_state = $false
@@ -76,7 +76,7 @@ If ($wsl_state -eq 'Enabled') {
 # https://docs.microsoft.com/en-us/windows/wsl/wsl-config
 $cfg_path = "$HOME\.wslconfig"
 if ((Test-Path $cfg_path) -eq $false) {
-    Write-Host "Limiting Wasta-WSL to 4GB RAM and 2 CPUs."
+    Write-Host "Limiting Wasta-WSL to 4GB RAM and 2 CPUs..."
     New-Item "$cfg_path" -ItemType "File"
     Add-Content "$cfg_path" "[wsl2]"
     Add-Content "$cfg_path" "memory=4GB"
@@ -100,17 +100,21 @@ If ($disk_path -eq $false) {
     Write-Host "The file Wasta-20.04.tar will be downloaded from the following link [about 2 GB]:"
     $url = "$drive/uc?export=download&confirm=$confirm&id=$id"
     Write-Host "$url"
-    $ans = Read-Host "Continue with download? [Y/n]"
+    Write-Host "Continue with download? [Y/n/x]"
+    $ans = Read-Host "Y = yes [default], n = no, x = use already-downloaded file"
     If (!$ans) {
         $ans = 'Y'
     }
     $ans = $ans.ToUpper()
-    If ($ans -ne 'Y') {
+    If ($ans -eq 'Y') {
+        Write-Host "Downloading $DISTRO.tar.gz... [2 GB]"
+        Invoke-WebRequest -Uri "$url" -OutFile "$BASE\$DISTRO.tar.gz" -UseBasicParsing -WebSession $session
+    } ElseIf ($ans -eq 'X') {
+        Read-Host "Manually copy Wasta-20.04.tar.gz into $BASE and press [Enter] to continue with installation."
+    } Else {
         Write-Host "Download aborted. Exiting."
         Exit 2
     }
-    Write-Host "Downloading $DISTRO.tar.gz... [2 GB]"
-    Invoke-WebRequest -Uri "$url" -OutFile "$BASE\$DISTRO.tar.gz" -UseBasicParsing -WebSession $session
 
     # Decompress the gz file.
     & "$BASE\scripts\un-gzip.ps1" "$BASE\$DISTRO.tar.gz"

@@ -21,3 +21,9 @@ Start-Sleep -Seconds $wait
 
 # Launch X Window for Wasta WSL.
 & C:\'Program Files'\VcXsrv\vcxsrv.exe -ac -wgl -dpms -wr -query $env:computername-wsl
+$check = $?
+
+# Delete Wasta-20.04.tar to save disk space (but keep Wasta-20.04.tar.gz).
+If ($check -eq $true) {
+    Remove-Item "$env:APPDATA\Wasta-Linux\Wasta-20.04.tar" -ErrorAction 'SilentlyContinue'
+}

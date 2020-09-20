@@ -10,7 +10,7 @@
 
 ### Overview
 - VM Prep 1: Use Virt-Manager for VM testing (e.g. Wasta host / Win10 guest / WSL2)
-- VM Prep 2: Enable nested virtualization:
+- VM Prep 2: Enable nested virtualization on host:
     - $ cat /etc/modprobe.d/kvm_intel[|amd].conf
     - options kvm-intel[|amd] nested=Y
 - VM Prep 3: Virt-Manager VM config > Processors > Configuration > Copy host's proc config
