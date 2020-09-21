@@ -39,6 +39,7 @@ If ("$PARENT" -ne "$BASE") {
 }
 
 # Enable VirtualMachinePlatform if not enabled.
+Write-Host "Checking for VirtualMachinePlatform..."
 $vmp_state = Get-WindowsOptionalFeature -Online -FeatureName 'VirtualMachinePlatform' | Select-Object -ExpandProperty 'State'
 If ($vmp_state -eq 'Enabled') {
     $vmp_state = $true
@@ -56,6 +57,7 @@ If ($vmp_state -eq 'Enabled') {
 }
 
 # Enable Windows Subsystem for Linux if not enabled.
+Write-Host "Checking for Windows Subsystem for Linux..."
 $wsl_state = Get-WindowsOptionalFeature -Online -FeatureName 'Microsoft-Windows-Subsystem-Linux' | Select-Object -ExpandProperty 'State'
 If ($wsl_state -eq 'Enabled') {
     $wsl_state = $true
@@ -84,6 +86,7 @@ if ((Test-Path $cfg_path) -eq $false) {
 }
 
 # Install Wasta 20.04 if not installed.
+Write-Host "Checking for existing installaltion of Wasta-20.04..."
 $DISK = "rootfs"
 $DISTRO = "Wasta-20.04"
 $disk_path = Test-Path "$BASE\$DISK"
@@ -133,6 +136,7 @@ If ($disk_path -eq $false) {
 }
 
 # Install VcXsrv if not installed.
+Write-Host "Checking for existing installation of VcXsrv..."
 $vcxsrv = Test-Path "$C_PROG_FILES\VcXsrv\vcxsrv.exe"
 If ($vcxsrv -eq $false) {
     Write-Host "Downloading and installing VcXsrv X Window server... [41 MB]"
@@ -150,6 +154,7 @@ If ($vcxsrv -eq $false) {
 }
 
 # Create Wasta-Linux launcher on Desktop and in Wasta-Linux folder once all parts are installed.
+Write-Host "Verifying that all criteria are met..."
 If ( ($vmp_state -eq $true) -and ($wsl_state -eq $true) -and ($disk_path -eq $true) -and ($vcxsrv -eq $true) ) {
     $desktop_launcher = Join-Path ([Environment]::GetFolderPath("Desktop")) "Wasta-Linux.lnk"
     $wasta_launcher = "$BASE\Wasta-Linux.lnk"
@@ -167,6 +172,16 @@ If ( ($vmp_state -eq $true) -and ($wsl_state -eq $true) -and ($disk_path -eq $tr
 
     Write-Host "Creating Desktop shortcut..."
     Copy-Item -Path "$wasta_launcher" -Destination "$desktop_launcher"
+    $launcher = Test-Path "$desktop_launcher"
+} Else {
+    Write-Host "Installation state"
+    Write-Host "-----------------------------------------"
+    Write-Host "VirtualMachinePlatform:            $vmp_state"
+    Write-Host "Microsoft-Windows-Subsystem-Linux: $wsl_state"
+    Write-Host "Wasta-20.04 installed:             $wsl_state"
+    Write-Host "VcXsrv installed:                  $vcxsrv"
+    Write-Host "Launcher created:                  $launcher"
+    Exit 1
 }
 
 # Restart computer if needed.
