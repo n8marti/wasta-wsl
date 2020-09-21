@@ -81,7 +81,7 @@ If ($reboot -eq $true) {
     Write-Host "then you will need to run the previous 'Set-ExecutionPolicy Bypass -Scope Process'"
     Write-Host " command, then you will be able to run the script again with '.\install-wasta-wsl.ps1'"
     Write-Host ""
-    $ans = "Reboot now? [Y/n]"
+    $ans = Read-Host "Reboot now? [Y/n]"
     If (!$ans) {
         $ans = 'Y'
     }
