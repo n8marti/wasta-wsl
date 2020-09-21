@@ -69,9 +69,6 @@ If ($wsl_state -eq 'Enabled') {
         Write-Host "Unable to enable Microsoft-Windows-Subsystem-Linux. Exiting."
         Exit 1
     }
-    # kernel update package [14MB]:
-    # TODO: Download and install kernel update package, if needed.
-    # https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi
 }
 
 # Limit RAM allocated to all WSLs (including Wasta-WSL).
@@ -135,6 +132,28 @@ If ($disk_path -eq $false) {
     # > wsl --distribution 'Wasta-20.04' --user 'wasta'
 }
 
+# Set Wasta-20.04 to WSL version 2. No [easy?] way to verify the WSL version
+#   programmatically before trying to set it because I can't figure out how to
+#   "grep" the output of wsl commands!
+wsl --set-version "$DISTRO" 2
+$wsl2 = $?
+if ($wsl2 -eq $false) {
+    # Likely missing the kernel upgrade.
+    Write-Host "Downloading and installing the kernel update package... [14 MB]"
+    # kernel update package [14MB]:
+    $url = "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi"
+    # Download kernel update installer.
+    Invoke-WebRequest -Uri "$url" -OutFile "$BASE\wsl_update_x64.msi" -UseBasicParsing
+    # Run installer.
+    Start-Process "$BASE\wsl_update_x64.msi" -Wait
+    wsl --set-version "$DISTRO" 2
+    $wsl2 = $?
+    if ($wsl2 -eq $false) {
+        Write-Host "Unable to install the kernel update package and set WSL to version 2. Exiting."
+        Exit 1
+    }
+}
+
 # Install VcXsrv if not installed.
 Write-Host "Checking for existing installation of VcXsrv..."
 $vcxsrv = Test-Path "$C_PROG_FILES\VcXsrv\vcxsrv.exe"
@@ -156,7 +175,7 @@ If ($vcxsrv -eq $false) {
 # Create Wasta-Linux launcher on Desktop and in Wasta-Linux folder once all parts are installed.
 Write-Host "Verifying that all criteria are met..."
 $launcher = $false
-If ( ($vmp_state -eq $true) -and ($wsl_state -eq $true) -and ($disk_path -eq $true) -and ($vcxsrv -eq $true) ) {
+If ( ($vmp_state -eq $true) -and ($wsl_state -eq $true) -and ($disk_path -eq $true) -and ($wsl2 -eq $true) -and ($vcxsrv -eq $true) ) {
     $desktop_launcher = Join-Path ([Environment]::GetFolderPath("Desktop")) "Wasta-Linux.lnk"
     $wasta_launcher = "$BASE\Wasta-Linux.lnk"
 
@@ -181,6 +200,7 @@ If ( ($vmp_state -eq $true) -and ($wsl_state -eq $true) -and ($disk_path -eq $tr
     Write-Host "VirtualMachinePlatform:            $vmp_state"
     Write-Host "Microsoft-Windows-Subsystem-Linux: $wsl_state"
     Write-Host "Wasta-20.04 installed:             $wsl_state"
+    Write-Host "WSL set to v2 for Wasta:"          $wsl2
     Write-Host "VcXsrv installed:                  $vcxsrv"
     Write-Host "Launcher created:                  $launcher"
     Exit 1
