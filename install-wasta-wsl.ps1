@@ -25,6 +25,7 @@ $PARENT = "$PSScriptRoot"
 $C_PROG_FILES = $env:ProgramFiles
 $BASE_PAR = "$env:APPDATA"
 $BASE = "$BASE_PAR\Wasta-Linux"
+$reboot = $false
 
 # Create Wasta-Linux install folder.
 Write-Host "Preparing installation folder at $BASE."
@@ -49,6 +50,7 @@ If ($vmp_state -eq 'Enabled') {
     Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart
     If ($? -eq $true) {
         $vmp_state = $true
+        $reboot = $true
     } Else {
         $vmp_state = $false
         Write-Host "   Unable to enable VirtualMachinePlatform. Exiting."
@@ -61,18 +63,19 @@ Write-Host "Checking for Windows Subsystem for Linux..."
 $wsl_state = Get-WindowsOptionalFeature -Online -FeatureName 'Microsoft-Windows-Subsystem-Linux' | Select-Object -ExpandProperty 'State'
 If ($wsl_state -eq 'Enabled') {
     $wsl_state = $true
-    } Else {
+} Else {
     Write-Host "   Enabling Microsoft-Windows-Subsystem-Linux."
     Enable-WindowsOptionalFeature -Online -FeatureName 'Microsoft-Windows-Subsystem-Linux' -NoRestart
     $wsl_state = $?
-    If ($wsl_state = $false) {
+    $reboot = $true
+    If ($wsl_state -eq $false) {
         Write-Host "   Unable to enable Microsoft-Windows-Subsystem-Linux. Exiting."
         Exit 1
     }
 }
 
 # Restart computer if needed.
-If ((New-Object -ComObject Microsoft.Update.SystemInfo).RebootRequired) {
+If ($reboot -eq $true) {
     Write-Host "Reboot required before continuing. Please reboot and re-launch the script."
     Write-Host "You will need to again use the 'cd' command to change to the correct directory,"
     Write-Host "then you will need to run the previous 'Set-ExecutionPolicy Bypass -Scope Process'"
@@ -97,7 +100,7 @@ If ((New-Object -ComObject Microsoft.Update.SystemInfo).RebootRequired) {
 Write-Host "Ensuring that WSL uses version 2 by default..."
 wsl --set-default-version 2
 $wsl2 = $?
-if ($wsl2 -eq $false) {
+If ($wsl2 -eq $false) {
     # Likely missing the kernel upgrade.
     Write-Host "   Downloading and installing the kernel update package... [14 MB]"
     # kernel update package [14MB]:
@@ -108,7 +111,7 @@ if ($wsl2 -eq $false) {
     Start-Process "$BASE\wsl_update_x64.msi" -Wait
     wsl --set-version "$DISTRO" 2
     $wsl2 = $?
-    if ($wsl2 -eq $false) {
+    If ($wsl2 -eq $false) {
         Write-Host "   Unable to install the kernel update package and set WSL to version 2. Exiting."
         Exit 1
     }
@@ -117,7 +120,7 @@ if ($wsl2 -eq $false) {
 # Limit RAM allocated to all WSLs (including Wasta-WSL).
 # https://docs.microsoft.com/en-us/windows/wsl/wsl-config
 $cfg_path = "$HOME\.wslconfig"
-if ((Test-Path $cfg_path) -eq $false) {
+If ((Test-Path $cfg_path) -eq $false) {
     Write-Host "Limiting Wasta-WSL to 4GB RAM and 2 CPUs..."
     New-Item "$cfg_path" -ItemType "File"
     Add-Content "$cfg_path" "[wsl2]"
@@ -226,16 +229,4 @@ If ( ($vmp_state -eq $true) -and ($wsl_state -eq $true) -and ($disk_path -eq $tr
     Write-Host "VcXsrv installed:                  $vcxsrv"
     Write-Host "Launcher created:                  $launcher"
     Exit 1
-}
-
-# Restart computer if needed.
-If ((New-Object -ComObject Microsoft.Update.SystemInfo).RebootRequired) {
-    $ans = "Reboot required. Reboot now? [Y/n]"
-    If (!$ans) {
-        $ans = 'Y'
-    }
-    $ans = $ans.ToUpper()
-    If ($ans -eq 'Y') {
-        Restart-Computer
-    }
 }
