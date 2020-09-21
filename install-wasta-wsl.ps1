@@ -147,7 +147,7 @@ If ($vcxsrv -eq $false) {
     #   Suggested: no Start Menu entry, no Desktop icon.
     Start-Process "$BASE\vcxsrv.installer.exe" -Wait
     $vcxsrv = Test-Path "$C_PROG_FILES\VcXsrv\vcxsrv.exe"
-    If ($vcxsrv = $false) {
+    If ($vcxsrv -eq $false) {
         Write-Host "Unable to install VcXsrv. Exiting."
         Exit 1
     }
@@ -155,6 +155,7 @@ If ($vcxsrv -eq $false) {
 
 # Create Wasta-Linux launcher on Desktop and in Wasta-Linux folder once all parts are installed.
 Write-Host "Verifying that all criteria are met..."
+$launcher = $false
 If ( ($vmp_state -eq $true) -and ($wsl_state -eq $true) -and ($disk_path -eq $true) -and ($vcxsrv -eq $true) ) {
     $desktop_launcher = Join-Path ([Environment]::GetFolderPath("Desktop")) "Wasta-Linux.lnk"
     $wasta_launcher = "$BASE\Wasta-Linux.lnk"
@@ -174,6 +175,7 @@ If ( ($vmp_state -eq $true) -and ($wsl_state -eq $true) -and ($disk_path -eq $tr
     Copy-Item -Path "$wasta_launcher" -Destination "$desktop_launcher"
     $launcher = Test-Path "$desktop_launcher"
 } Else {
+    Write-Host ""
     Write-Host "Installation state"
     Write-Host "-----------------------------------------"
     Write-Host "VirtualMachinePlatform:            $vmp_state"
