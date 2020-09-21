@@ -27,7 +27,7 @@ $BASE_PAR = "$env:APPDATA"
 $BASE = "$BASE_PAR\Wasta-Linux"
 
 # Create Wasta-Linux install folder.
-Write-Host "Creating install folder at $BASE and copying files."
+Write-Host "Preparing installation folder at $BASE."
 If ((Test-Path $BASE) -eq $false) {
     Write-Host "   Creating install folder at $BASE..."
     $null = New-Item -Path "$BASE_PAR" -Name "Wasta-Linux" -Type "directory"
@@ -67,6 +67,25 @@ If ($wsl_state -eq 'Enabled') {
     $wsl_state = $?
     If ($wsl_state = $false) {
         Write-Host "   Unable to enable Microsoft-Windows-Subsystem-Linux. Exiting."
+        Exit 1
+    }
+}
+
+# Restart computer if needed.
+If ((New-Object -ComObject Microsoft.Update.SystemInfo).RebootRequired) {
+    Write-Host "Reboot required before continuing. Please reboot and re-launch the script."
+    Write-Host "You will need to again use the 'cd' command to change to the correct directory,"
+    Write-Host "then you will need to run the previous 'Set-ExecutionPolicy Bypass -Scope Process'"
+    Write-Host " command, then you will be able to run the script again with '.\install-wasta-wsl.ps1'"
+    Write-Host ""
+    $ans = "Reboot now? [Y/n]"
+    If (!$ans) {
+        $ans = 'Y'
+    }
+    $ans = $ans.ToUpper()
+    If ($ans -eq 'Y') {
+        Restart-Computer
+    } Else {
         Exit 1
     }
 }
