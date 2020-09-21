@@ -97,6 +97,9 @@ If ($reboot -eq $true) {
 #   before trying to set it because I can't figure out how to
 #   "grep" the output of wsl commands!
 # Ensure that WSL uses v2 by default.
+# Possible registry key:
+# HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\Notifications\OptionalFeatures\Microsoft-Windows-Subsystem-Linux
+# REG_DWORD 0x00000001 (1)
 Write-Host "Ensuring that WSL uses version 2 by default..."
 wsl --set-default-version 2
 $wsl2 = $?
@@ -109,7 +112,7 @@ If ($wsl2 -eq $false) {
     Invoke-WebRequest -Uri "$url" -OutFile "$BASE\wsl_update_x64.msi" -UseBasicParsing
     # Run installer.
     Start-Process "$BASE\wsl_update_x64.msi" -Wait
-    wsl --set-version "$DISTRO" 2
+    wsl --set-default-version 2
     $wsl2 = $?
     If ($wsl2 -eq $false) {
         Write-Host "   Unable to install the kernel update package and set WSL to version 2. Exiting."
@@ -169,6 +172,26 @@ If ($disk_path -eq $false) {
     # Import into WSL.
     Write-Host "   Importing $DISTRO.tar into WSL. This could take several minutes..."
     wsl --import "$DISTRO" "$BASE" "$BASE\$DISTRO.tar"
+    $import = $?
+    If ($import -eq $false) {
+        # Likely missing the kernel upgrade.
+        Write-Host "   Downloading and installing the kernel update package... [14 MB]"
+        # kernel update package [14MB]:
+        $url = "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi"
+        # Download kernel update installer.
+        Invoke-WebRequest -Uri "$url" -OutFile "$BASE\wsl_update_x64.msi" -UseBasicParsing
+        # Run installer.
+        Start-Process "$BASE\wsl_update_x64.msi" -Wait
+        wsl --set-default-version 2
+        Write-Host "   Importing $DISTRO.tar into WSL (2nd try). This could take several minutes..."
+        wsl --import "$DISTRO" "$BASE" "$BASE\$DISTRO.tar"
+        $import = $?
+        If ($import -eq $false) {
+            Write-Host "   Unable to import the $DISTRO.tar file. Exiting."
+            Exit 1
+        }
+    }
+
     $disk_path = Test-Path "$BASE\$DISK2"
     If ($disk_path -eq $false) {
         Write-Host "   Unable to install $DISTRO. Exiting."
