@@ -29,12 +29,12 @@ $BASE = "$BASE_PAR\Wasta-Linux"
 # Create Wasta-Linux install folder.
 Write-Host "Creating install folder at $BASE and copying files."
 If ((Test-Path $BASE) -eq $false) {
-    Write-Host "Creating install folder at $BASE..."
+    Write-Host "   Creating install folder at $BASE..."
     $null = New-Item -Path "$BASE_PAR" -Name "Wasta-Linux" -Type "directory"
 }
 If ("$PARENT" -ne "$BASE") {
     # Copy all files to Wasta-Linux folder, updating old ones if necessary.
-    Write-Host "Copying files into $BASE..."
+    Write-Host "   Copying files into $BASE..."
     Copy-Item -Path "$PARENT\*" -Destination "$BASE" -Recurse -Force
 }
 
@@ -45,13 +45,13 @@ If ($vmp_state -eq 'Enabled') {
     $vmp_state = $true
 } Else {
     # VirtualMachinePlatform supposedly enables WSL2.
-    Write-Host "Enabling VirtualMachinePlatform..."
+    Write-Host "   Enabling VirtualMachinePlatform..."
     Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart
     If ($? -eq $true) {
         $vmp_state = $true
     } Else {
         $vmp_state = $false
-        Write-Host "Unable to enable VirtualMachinePlatform. Exiting."
+        Write-Host "   Unable to enable VirtualMachinePlatform. Exiting."
         Exit 1
     }
 }
@@ -62,11 +62,35 @@ $wsl_state = Get-WindowsOptionalFeature -Online -FeatureName 'Microsoft-Windows-
 If ($wsl_state -eq 'Enabled') {
     $wsl_state = $true
     } Else {
-    Write-Host "Enabling Microsoft-Windows-Subsystem-Linux."
+    Write-Host "   Enabling Microsoft-Windows-Subsystem-Linux."
     Enable-WindowsOptionalFeature -Online -FeatureName 'Microsoft-Windows-Subsystem-Linux' -NoRestart
     $wsl_state = $?
     If ($wsl_state = $false) {
-        Write-Host "Unable to enable Microsoft-Windows-Subsystem-Linux. Exiting."
+        Write-Host "   Unable to enable Microsoft-Windows-Subsystem-Linux. Exiting."
+        Exit 1
+    }
+}
+
+# Set WSL to version 2. No [easy?] way to verify the WSL version programmatically
+#   before trying to set it because I can't figure out how to
+#   "grep" the output of wsl commands!
+# Ensure that WSL uses v2 by default.
+Write-Host "Ensuring that WSL uses version 2 by default..."
+wsl --set-default-version 2
+$wsl2 = $?
+if ($wsl2 -eq $false) {
+    # Likely missing the kernel upgrade.
+    Write-Host "   Downloading and installing the kernel update package... [14 MB]"
+    # kernel update package [14MB]:
+    $url = "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi"
+    # Download kernel update installer.
+    Invoke-WebRequest -Uri "$url" -OutFile "$BASE\wsl_update_x64.msi" -UseBasicParsing
+    # Run installer.
+    Start-Process "$BASE\wsl_update_x64.msi" -Wait
+    wsl --set-version "$DISTRO" 2
+    $wsl2 = $?
+    if ($wsl2 -eq $false) {
+        Write-Host "   Unable to install the kernel update package and set WSL to version 2. Exiting."
         Exit 1
     }
 }
@@ -84,9 +108,10 @@ if ((Test-Path $cfg_path) -eq $false) {
 
 # Install Wasta 20.04 if not installed.
 Write-Host "Checking for existing installaltion of Wasta-20.04..."
-$DISK = "rootfs"
+$DISK1 = "rootfs" # WSL1
+$DISK2 = "ext4.vhdx" # WSL2
 $DISTRO = "Wasta-20.04"
-$disk_path = Test-Path "$BASE\$DISK"
+$disk_path = Test-Path "$BASE\$DISK2"
 If ($disk_path -eq $false) {
     # Download and install the distro. [2 GB]
     #   But first, deal with Drive's cookies hijinks.
@@ -97,22 +122,22 @@ If ($disk_path -eq $false) {
     $response = Invoke-WebRequest "$warn_url" -UseBasicParsing -SessionVariable session
     # Get unique confirm #.
     $confirm = $response.Content | Select-String 'confirm=([0-9a-zA-Z]+)&' | ForEach-Object {$_.Matches.Groups[1].Value}
-    Write-Host "The file Wasta-20.04.tar will be downloaded from the following link [about 2 GB]:"
+    Write-Host "   The file Wasta-20.04.tar will be downloaded from the following link [about 2 GB]:"
     $url = "$drive/uc?export=download&confirm=$confirm&id=$id"
     Write-Host "$url"
-    Write-Host "Continue with download? [Y/n/x]"
-    $ans = Read-Host "Y = yes [default], n = no, x = use already-downloaded file"
+    Write-Host "   Continue with download? [Y/n/x]"
+    $ans = Read-Host "   Y = yes [default], n = no, x = use already-downloaded file"
     If (!$ans) {
         $ans = 'Y'
     }
     $ans = $ans.ToUpper()
     If ($ans -eq 'Y') {
-        Write-Host "Downloading $DISTRO.tar.gz... [2 GB]"
+        Write-Host "   Downloading $DISTRO.tar.gz... [2 GB]"
         Invoke-WebRequest -Uri "$url" -OutFile "$BASE\$DISTRO.tar.gz" -UseBasicParsing -WebSession $session
     } ElseIf ($ans -eq 'X') {
-        Read-Host "Manually copy Wasta-20.04.tar.gz into $BASE and press [Enter] to continue with installation."
+        Read-Host "   Manually copy Wasta-20.04.tar.gz into $BASE and press [Enter] to continue with installation."
     } Else {
-        Write-Host "Download aborted. Exiting."
+        Write-Host "   Download aborted. Exiting."
         Exit 2
     }
 
@@ -120,45 +145,23 @@ If ($disk_path -eq $false) {
     & "$BASE\scripts\un-gzip.ps1" "$BASE\$DISTRO.tar.gz"
 
     # Import into WSL.
-    Write-Host "Importing $DISTRO.tar into WSL. This could take several minutes..."
+    Write-Host "   Importing $DISTRO.tar into WSL. This could take several minutes..."
     wsl --import "$DISTRO" "$BASE" "$BASE\$DISTRO.tar"
-    $disk_path = $?
+    $disk_path = Test-Path "$BASE\$DISK2"
     If ($disk_path -eq $false) {
-        Write-Host "Unable to install $DISTRO. Exiting."
+        Write-Host "   Unable to install $DISTRO. Exiting."
         Exit 1
     }
     # Default user is "root" when imported.
-    # We will need to specify "wasta" on wsl launch command line if launched manually:
+    # We will need to specify "wasta" user on wsl launch command line if launched manually:
     # > wsl --distribution 'Wasta-20.04' --user 'wasta'
-}
-
-# Set Wasta-20.04 to WSL version 2. No [easy?] way to verify the WSL version
-#   programmatically before trying to set it because I can't figure out how to
-#   "grep" the output of wsl commands!
-wsl --set-version "$DISTRO" 2
-$wsl2 = $?
-if ($wsl2 -eq $false) {
-    # Likely missing the kernel upgrade.
-    Write-Host "Downloading and installing the kernel update package... [14 MB]"
-    # kernel update package [14MB]:
-    $url = "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi"
-    # Download kernel update installer.
-    Invoke-WebRequest -Uri "$url" -OutFile "$BASE\wsl_update_x64.msi" -UseBasicParsing
-    # Run installer.
-    Start-Process "$BASE\wsl_update_x64.msi" -Wait
-    wsl --set-version "$DISTRO" 2
-    $wsl2 = $?
-    if ($wsl2 -eq $false) {
-        Write-Host "Unable to install the kernel update package and set WSL to version 2. Exiting."
-        Exit 1
-    }
 }
 
 # Install VcXsrv if not installed.
 Write-Host "Checking for existing installation of VcXsrv..."
 $vcxsrv = Test-Path "$C_PROG_FILES\VcXsrv\vcxsrv.exe"
 If ($vcxsrv -eq $false) {
-    Write-Host "Downloading and installing VcXsrv X Window server... [41 MB]"
+    Write-Host "   Downloading and installing VcXsrv X Window server... [41 MB]"
     $url = "https://sourceforge.net/projects/vcxsrv/files/latest/download"
     $url = "https://liquidtelecom.dl.sourceforge.net/project/vcxsrv/vcxsrv/1.20.8.1/vcxsrv-64.1.20.8.1.installer.exe"
     Invoke-WebRequest -Uri "$url" -OutFile "$BASE\vcxsrv.installer.exe" -UseBasicParsing
@@ -167,7 +170,7 @@ If ($vcxsrv -eq $false) {
     Start-Process "$BASE\vcxsrv.installer.exe" -Wait
     $vcxsrv = Test-Path "$C_PROG_FILES\VcXsrv\vcxsrv.exe"
     If ($vcxsrv -eq $false) {
-        Write-Host "Unable to install VcXsrv. Exiting."
+        Write-Host "   Unable to install VcXsrv. Exiting."
         Exit 1
     }
 }
