@@ -141,8 +141,8 @@ If ($vcxsrv -eq $false) {
     Invoke-WebRequest -Uri "$url" -OutFile "$BASE\vcxsrv.installer.exe" -UseBasicParsing
     # Run installer, accepting default location.
     #   Suggested: no Start Menu entry, no Desktop icon.
-    & "$BASE\vcxsrv.installer.exe"
-    $vcxsrv = $?
+    Start-Process "$BASE\vcxsrv.installer.exe" -Wait
+    $vcxsrv = Test-Path "$C_PROG_FILES\VcXsrv\vcxsrv.exe"
     If ($vcxsrv = $false) {
         Write-Host "Unable to install VcXsrv. Exiting."
         Exit 1
