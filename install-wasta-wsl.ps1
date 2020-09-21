@@ -97,8 +97,12 @@ If ($reboot -eq $true) {
 #   before trying to set it because I can't figure out how to
 #   "grep" the output of wsl commands!
 # Ensure that WSL uses v2 by default.
-# Possible registry key:
+# Possible registry keys to check:
 # HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\Notifications\OptionalFeatures\Microsoft-Windows-Subsystem-Linux
+# REG_DWORD 0x00000001 (1)
+# HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\Packages\Microsoft-Windows-Lxss-Optional-Package~31bf3856ad364e35~amd64~~10.0.19041.264\Updates
+# REG_DWORD 0x00000001 (1)
+# HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\Packages\Microsoft-Windows-Lxss-Optional-Package~31bf3856ad364e35~amd64~~10.0.19041.508\Updates
 # REG_DWORD 0x00000001 (1)
 Write-Host "Ensuring that WSL uses version 2 by default..."
 wsl --set-default-version 2
