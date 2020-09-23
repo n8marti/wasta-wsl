@@ -169,7 +169,8 @@ If ($disk_path -eq $false) {
     If ($gz_path -eq $false) {
         # Download tar.gz, but first deal with Drive's cookies hijinks.
         $drive = "https://drive.google.com"
-        $id = "1ajcXQq_t1OIi1RU4XIigPqykLnjZO3QJ"
+        $id = "1ajcXQq_t1OIi1RU4XIigPqykLnjZO3QJ" # 20.04 BETA
+        $id = "1p5WefBbHC-H9n-3MbSyulZoUbjTbz5oV" # 20.04.1
         $warn_url = "$drive/uc?export=download&id=$id"
         # Initialize session.
         $response = Invoke-WebRequest "$warn_url" -UseBasicParsing -SessionVariable session
