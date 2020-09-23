@@ -47,6 +47,8 @@ function Error-Exit {
     Write-Host "WSL set to v2 for Wasta:"          $wsl2
     Write-Host "VcXsrv installed:                  $vcxsrv"
     Write-Host "Launcher created:                  $launcher"
+    Write-Host ""
+    Write-Host ""
     Exit 1
 }
 
@@ -140,7 +142,7 @@ If ((Test-Path $cfg_path) -eq $false) {
 }
 
 # Install Wasta 20.04 if not installed.
-Write-Host "Checking for existing installaltion of Wasta-20.04..."
+Write-Host "Checking for existing installation of Wasta-20.04..."
 $DISK1 = "rootfs" # WSL1
 $DISK2 = "ext4.vhdx" # WSL2
 $DISTRO = "Wasta-20.04"
@@ -159,6 +161,7 @@ If ($disk_path -eq $false) {
     # Run installer.
     Start-Process "$BASE\$msi" -Wait
     wsl --set-default-version 2
+    $wsl2 = $?
 
     # Download and install the distro. [2 GB]
     $gz = "$DISTRO.tar.gz"
@@ -211,6 +214,8 @@ If ($disk_path -eq $false) {
     # Default user is "root" when imported.
     # We will need to specify "wasta" user on wsl launch command line if launched manually:
     # > wsl --distribution 'Wasta-20.04' --user 'wasta'
+} Else {
+    $wsl2 = $true
 }
 
 # Install VcXsrv if not installed.
@@ -218,12 +223,16 @@ Write-Host "Checking for existing installation of VcXsrv..."
 $vcxsrv = Test-Path "$C_PROG_FILES\VcXsrv\vcxsrv.exe"
 If ($vcxsrv -eq $false) {
     Write-Host "   Downloading and installing VcXsrv X Window server... [41 MB]"
-    $url = "https://sourceforge.net/projects/vcxsrv/files/latest/download"
-    $url = "https://liquidtelecom.dl.sourceforge.net/project/vcxsrv/vcxsrv/1.20.8.1/vcxsrv-64.1.20.8.1.installer.exe"
-    Invoke-WebRequest -Uri "$url" -OutFile "$BASE\vcxsrv.installer.exe" -UseBasicParsing
+    $inst = "vcxsrv.installer.exe"
+    $inst_path = Test-Path "$BASE\$inst"
+    If ($inst_path -eq $false) {
+        $url = "https://sourceforge.net/projects/vcxsrv/files/latest/download"
+        $url = "https://liquidtelecom.dl.sourceforge.net/project/vcxsrv/vcxsrv/1.20.8.1/vcxsrv-64.1.20.8.1.installer.exe"
+        Invoke-WebRequest -Uri "$url" -OutFile "$BASE\$inst" -UseBasicParsing
+    }
     # Run installer, accepting default location.
     #   Suggested: no Start Menu entry, no Desktop icon.
-    Start-Process "$BASE\vcxsrv.installer.exe" -Wait
+    Start-Process "$BASE\$inst" -Wait
     $vcxsrv = Test-Path "$C_PROG_FILES\VcXsrv\vcxsrv.exe"
     If ($vcxsrv -eq $false) {
         Write-Host "   Unable to install VcXsrv. Exiting."
@@ -256,3 +265,5 @@ If ( ($vmp_state -eq $true) -and ($wsl_state -eq $true) -and ($disk_path -eq $tr
     Write-Host "Failed to install $DISTRO."
     Error-Exit
 }
+Write-Host ""
+Write-Host ""

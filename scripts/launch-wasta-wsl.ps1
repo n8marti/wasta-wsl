@@ -15,9 +15,13 @@ While ($check -eq $false) {
 }
 
 # Have to wait awhile, otherwise vcxsrv will fail to start.
-$wait = 10
-Write-Host "$wait seconds..."
-Start-Sleep -Seconds $wait
+Write-Host "Waiting for Wasta to come online..."
+$check = Test-Connection -ComputerName $env:computername-wsl -Quiet
+While ($check -eq $false) {
+    $wait = 1
+    Start-Sleep -Seconds $wait
+    $check = Test-Connection -ComputerName $env:computername-wsl -Quiet
+}
 
 # Launch X Window for Wasta WSL.
 & C:\'Program Files'\VcXsrv\vcxsrv.exe -ac -wgl -dpms -wr -query $env:computername-wsl
