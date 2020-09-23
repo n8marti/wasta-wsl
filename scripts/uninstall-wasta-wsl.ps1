@@ -8,7 +8,7 @@
 $USER_DIR = "$HOME"
 $DESKTOP = "$USER_DIR\Desktop"
 $VCXSRV_DIR = "$env:ProgramFiles\VcXsrv"
-$WASTA_DIR = "$env:$APPDATA\Wasta-Linux"
+$WASTA_DIR = "$env:APPDATA\Wasta-Linux"
 
 Write-Host "This script can either remove all files installed by install-wasta-wsl.ps1,"
 Write-Host "or ask for confirmation for each part."
@@ -19,52 +19,52 @@ If (!$ans) {
 $ans = $ans.ToUpper()
 
 # Remove desktop launcher.
-If ($ans -ne 'Y') {
-    $a = Read-Host "Remove desktop launcher? [Y/n]"
-    If (!$a) {
-        $a = 'Y'
+$desktop_launcher_path = Test-Path "$DESKTOP\Wasta-Linux.lnk"
+If ($desktop_launcher_path -eq $true) {
+    If ($ans -ne 'Y') {
+        $a = Read-Host "Remove desktop launcher? [Y/n]"
+        If (!$a) {
+            $a = 'Y'
+        }
+        $a = $a.ToUpper()
+    } Else {
+        $a = $ans
     }
-    $a = $ans.ToUpper()
-} Else {
-    $a = $ans
-}
-If ($a -eq 'Y') {
-    $desktop_launcher_path = Test-Path "$DESKTOP\Wasta-Linux.lnk"
-    If ($desktop_launcher_path -eq $true) {
+    If ($a -eq 'Y') {
         Remove-Item -Path "$DESKTOP\Wasta-Linux.lnk"
     }
 }
 
 # Uninstall VcXsrv.
-If ($ans -ne 'Y') {
-    $a = Read-Host "Uninstall VcXsrv? [Y/n]"
-    If (!$a) {
-        $a = 'Y'
+$vcxsrv_path = Test-Path "$VCXSRV_DIR\vcxsrv.exe"
+If ($vcxsrv_path -eq $true) {
+    If ($ans -ne 'Y') {
+        $a = Read-Host "Uninstall VcXsrv? [Y/n]"
+        If (!$a) {
+            $a = 'Y'
+        }
+        $a = $a.ToUpper()
+    } Else {
+        $a = $ans
     }
-    $a = $ans.ToUpper()
-} Else {
-    $a = $ans
-}
-If ($a -eq 'Y') {
-    $vcxsrv_path = Test-Path "$VCXSRV_DIR\vcxsrv.exe"
-    If ($vcxsrv_path -eq $true) {
+    If ($a -eq 'Y') {
         Start-Process "$VCXSRV_DIR\uninstall.exe" -Wait
     }
 }
 
 # Remove .wslconfig.
-If ($ans -ne 'Y') {
-    $a = Read-Host "Remove .wslconfig file? [Y/n]"
-    If (!$a) {
-        $a = 'Y'
+$cfg_path = "$USER_DIR\.wslconfig"
+If ($cfg_path -eq $true) {
+    If ($ans -ne 'Y') {
+        $a = Read-Host "Remove .wslconfig file? [Y/n]"
+        If (!$a) {
+            $a = 'Y'
+        }
+        $a = $a.ToUpper()
+    } Else {
+        $a = $ans
     }
-    $a = $ans.ToUpper()
-} Else {
-    $a = $ans
-}
-If ($a -eq 'Y') {
-    $cfg_path = "$USER_DIR\.wslconfig"
-    If ($cfg_path -eq $true) {
+    If ($a -eq 'Y') {
         Remove-Item -Path "$USER\.wslconfig"
     }
 }
@@ -75,7 +75,7 @@ If ($ans -ne 'Y') {
     If (!$a) {
         $a = 'Y'
     }
-    $a = $ans.ToUpper()
+    $a = $a.ToUpper()
 } Else {
     $a = $ans
 }
@@ -85,18 +85,18 @@ If ($a -eq 'Y') {
 }
 
 # Remove Wasta-Linux folder.
-If ($ans -ne 'Y') {
-    $a = Read-Host "Remove Wasta-Linux folder and remaining files? [Y/n]"
-    If (!$a) {
-        $a = 'Y'
+$wasta_dir_path = Test-Path "$WASTA_DIR"
+If ($wasta_dir_path -eq $true) {
+    If ($ans -ne 'Y') {
+        $a = Read-Host "Remove Wasta-Linux folder and remaining files? [Y/n]"
+        If (!$a) {
+            $a = 'Y'
+        }
+        $a = $a.ToUpper()
+    } Else {
+        $a = $ans
     }
-    $a = $ans.ToUpper()
-} Else {
-    $a = $ans
-}
-If ($a -eq 'Y') {
-    $wasta_dir_path = Test-Path "$WASTA_DIR"
-    If ($wasta_dir_path -eq $true) {
+    If ($a -eq 'Y') {
         Remove-Item -Path $WASTA_DIR -Recurse
     }
 }
