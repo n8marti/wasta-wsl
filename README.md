@@ -8,8 +8,8 @@ Try Wasta-Linux in Windows using the Windows Subsystem for Linux
 - The ability to download around 2 GB of files for installation.
 
 ### Installation steps:
-- Download this Wasta-WSL git repo as a zip file:
-  - https://github.com/n8marti/wasta-wsl/archive/master.zip
+- Download this Wasta-WSL git repo as a zip file from the Releases page:
+  - https://github.com/n8marti/wasta-wsl/releases
 - Extract zip folder to somewhere convenient (e.g. Downloads).
 - Go to extracted location, right-click on "wasta-wsl-master" in the Address Bar.
 - Choose "Copy Address" from the context menu.
