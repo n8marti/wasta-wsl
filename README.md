@@ -8,15 +8,15 @@ Try Wasta-Linux in Windows using the Windows Subsystem for Linux
 - The ability to download around 2 GB of files for installation.
 
 ### Installation steps:
-- Download this Wasta-WSL git repo as a zip file from the Releases page:
+- Download the Wasta-WSL script package as a zip file from the Releases page:
   - https://github.com/n8marti/wasta-wsl/releases
 - Extract zip folder to somewhere convenient (e.g. Downloads).
-- Go to extracted location, right-click on "wasta-wsl-master" in the Address Bar.
+- Go to extracted location, right-click on "wasta-wsl-v[version.number]" in the Address Bar.
 - Choose "Copy Address" from the context menu.
-- Start Windows PowerShell as Administrator by finding it in the Start Menu, right-clicking on it, and choosing "Run as Administrator".
+- Start Windows PowerShell by finding it in the Start Menu.
 - In the PowerShell window type "cd " (3 characters: "c", "d", " "), then paste the file address you copied earlier and hit [Enter], e.g.:
 ```
-cd C:\Users\MyUser\Downloads\wasta-linux-master
+cd C:\Users\MyUser\Downloads\wasta-linux-v0.1
 ```
 - Temporarily allow script execution with this command (permission will be revoked when the PowerShell window is closed):
 ```
