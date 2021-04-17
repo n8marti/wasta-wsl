@@ -4,6 +4,9 @@
 - [x] Fix colord polkit issue.
 - [x] Test decompression from .tar.gz.
 - [x] Verify installation process on clean system.
+- [ ] Build in checksums to both the tar.gz and the tar files.
+- [ ] Clarify during boot-up that it's checking for a network connection to Wasta
+- [ ] Figure out why the X server window might get slugging when logging in to Cinnamon
 - [ ] Upload Wasta-20.04.tar(.gz) to... Drive? GitHub? cloud server?
 - [ ] Create Distro Launcher?: https://github.com/Microsoft/WSL-DistroLauncher
 

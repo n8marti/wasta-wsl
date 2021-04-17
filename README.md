@@ -7,6 +7,12 @@ Try Wasta-Linux in Windows using the Windows Subsystem for Linux
 - At least 16 GB of storage space in the drive holding your user folder (Drive C: for most people)
 - The ability to download around 2 GB of files for installation.
 
+### Tips:
+- Download the Wasta disk image file ahead of time to speed things up. You can get it from Drive:
+  https://drive.google.com/uc?export=download&id=1p5WefBbHC-H9n-3MbSyulZoUbjTbz5oV
+- If you already happen to use WSL, this shouldn't cause any problems for you, except that this creates a .wslconfig file in your User folder to limit WSL to 4GB RAM and 2 CPUs. If you don't like this, you can modify or delete the file according to your preferences. It will be found at C:\Users\<User Name>\.wslconfig.
+- On Windows 10 Pro (and maybe Home edition)...
+
 ### Installation steps:
 - Download the Wasta-WSL script package as a zip file from the Releases page:
   - https://github.com/n8marti/wasta-wsl/releases
